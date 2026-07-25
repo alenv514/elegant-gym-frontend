@@ -352,4 +352,10 @@
 
 @media (max-width: 480px) {
   .form-grid-2 { grid-template-columns: 1fr; }
+  .col-hide-mobile { display: none; }
+}
+
+/* ─── BADGE: no wrapping ─────────────────────────────── */
+.badge {
+  white-space: nowrap;
 }

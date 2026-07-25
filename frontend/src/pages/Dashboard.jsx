@@ -92,28 +92,28 @@ export default function Dashboard() {
         <StatCard
           label="Miembros activos"
           value={data?.miembrosActivos || 0}
-          sub="En tu gym hoy"
+          sub="En tu gym"
         />
         <StatCard
           label="Clases"
           value={data?.clasesDehoy || 0}
-          sub="Programadas en el sistema"
+          sub="En el sistema"
         />
         <StatCard
           label="Pagos pendientes"
           value={data?.pagosPendientes || 0}
-          sub="Por vencer o vencidos"
+          sub="Vencen pronto"
           accent="var(--warning)"
         />
         <StatCard
           label="Ingresos del mes"
           value={`$${(data?.ingresosMes || 0).toLocaleString()}`}
-          sub="Registrados en el sistema"
+          sub="Registrados"
         />
       </div>
 
       {/* Two-column section */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="dashboard-grid">
 
         {/* Clases del día */}
         <div className="card">
@@ -162,14 +162,14 @@ export default function Dashboard() {
               <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>No hay deudas ni vencimientos pendientes</p>
             ) : (
               data.pagosProximos.map(p => (
-                <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--text)' }}>{p.nombre}</div>
+                <div key={p.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nombre}</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      Vence: {new Date(p.vencimiento).toLocaleDateString('es-MX')}
+                      {new Date(p.vencimiento).toLocaleDateString('es-MX')}
                     </div>
                   </div>
-                  <StatusBadge estado={p.estado} />
+                  <div style={{ flexShrink: 0 }}><StatusBadge estado={p.estado} /></div>
                 </div>
               ))
             )}

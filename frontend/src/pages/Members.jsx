@@ -201,9 +201,9 @@ export default function Members() {
             <thead>
               <tr>
                 <th>Nombre</th>
-                <th>Plan</th>
+                <th className="col-hide-mobile">Plan</th>
                 <th>Estado</th>
-                <th>Vencimiento</th>
+                <th className="col-hide-mobile">Vencimiento</th>
                 <th style={{ width: 80 }}></th>
               </tr>
             </thead>
@@ -238,13 +238,13 @@ export default function Members() {
                       <span style={{ fontWeight: 500 }}>{m.nombre}</span>
                     </div>
                   </td>
-                  <td style={{ color: 'var(--text-muted)' }}>{m.plan_nombre || 'Sin Plan'}</td>
+                  <td className="col-hide-mobile" style={{ color: 'var(--text-muted)' }}>{m.plan_nombre || 'Sin Plan'}</td>
                   <td>
                     <span className={`badge ${ESTADO_BADGE[m.estado]}`}>
                       {ESTADO_LABEL[m.estado]}
                     </span>
                   </td>
-                  <td style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                  <td className="col-hide-mobile" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
                     {new Date(m.fecha_vencimiento).toLocaleDateString('es-MX')}
                   </td>
                   <td style={{ textAlign: 'right' }}>
