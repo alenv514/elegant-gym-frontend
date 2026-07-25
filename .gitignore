@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Env files (never commit)
+.env
+.env.local
+.env.production
+.env.*
+backend/.env
+backend/.env.*
+
+# WhatsApp sessions (contains credentials)
+backend/sessions/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
