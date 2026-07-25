@@ -8,7 +8,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO users (gym_id, nombre, email, password_hash, rol)
 VALUES 
 (NULL, 'Admin SaaS', 'admin@elegantgym.com', '$2a$10$wE3929iHqM46mN4aYt5/P.WkXk6/h5C5.xYnO5qC0sA1yD2yJ9TqS', 'saas_owner'),
-(1, 'Carlos Mendoza', 'carlos@misgym.com', '$2a$10$wE3929iHqM46mN4aYt5/P.WkXk6/h5C5.xYnO5qC0sA1yD2yJ9TqS', 'gym_owner')
+(1, 'Anthony', 'anthony@misgym.com', '$2a$10$wE3929iHqM46mN4aYt5/P.WkXk6/h5C5.xYnO5qC0sA1yD2yJ9TqS', 'gym_owner')
 ON CONFLICT DO NOTHING;
 
 -- 3. INSERT MEMBERSHIP PLANS FOR GYM 1
