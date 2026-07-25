@@ -144,38 +144,57 @@ export default function Payments() {
           <p>No se encontraron registros de caja</p>
         </div>
       ) : (
-        <div className="table-wrapper">
-          <table className="table" aria-label="Historial de pagos">
-            <thead>
-              <tr>
-                <th>Miembro</th>
-                <th>Plan</th>
-                <th>Monto</th>
-                <th>Método</th>
-                <th>Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paymentsList.map(p => (
-                <tr key={p.id}>
-                  <td style={{ fontWeight: 500 }}>{p.miembro_nombre}</td>
-                  <td style={{ color: 'var(--text-muted)' }}>{p.plan_nombre || 'Sin Plan'}</td>
-                  <td style={{ fontWeight: 600, color: 'var(--success)' }}>
-                    ${Number(p.monto).toLocaleString()}
-                  </td>
-                  <td>
-                    <span className={`badge ${METODO_BADGE[p.metodo] ?? 'badge-muted'}`}>
-                      {p.metodo}
-                    </span>
-                  </td>
-                  <td style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                    {new Date(p.fecha_pago).toLocaleDateString('es-MX')}
-                  </td>
+        <>
+          {/* Desktop: table */}
+          <div className="table-wrapper desktop-only">
+            <table className="table" aria-label="Historial de pagos">
+              <thead>
+                <tr>
+                  <th>Miembro</th>
+                  <th>Plan</th>
+                  <th>Monto</th>
+                  <th>Método</th>
+                  <th>Fecha</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {paymentsList.map(p => (
+                  <tr key={p.id}>
+                    <td style={{ fontWeight: 500 }}>{p.miembro_nombre}</td>
+                    <td style={{ color: 'var(--text-muted)' }}>{p.plan_nombre || 'Sin Plan'}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--success)' }}>
+                      ${Number(p.monto).toLocaleString()}
+                    </td>
+                    <td>
+                      <span className={`badge ${METODO_BADGE[p.metodo] ?? 'badge-muted'}`}>
+                        {p.metodo}
+                      </span>
+                    </td>
+                    <td style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                      {new Date(p.fecha_pago).toLocaleDateString('es-MX')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: card list */}
+          <div className="mobile-card-list mobile-only">
+            {paymentsList.map(p => (
+              <div key={p.id} className="mobile-list-card">
+                <div className="mobile-list-card-row">
+                  <span className="mobile-list-card-name">{p.miembro_nombre}</span>
+                  <span className="mobile-list-card-amount">${Number(p.monto).toLocaleString()}</span>
+                </div>
+                <div className="mobile-list-card-row">
+                  <span className="mobile-list-card-sub">{p.plan_nombre || 'Sin plan'} · {new Date(p.fecha_pago).toLocaleDateString('es-MX')}</span>
+                  <span className={`badge ${METODO_BADGE[p.metodo] ?? 'badge-muted'}`}>{p.metodo}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Register payment modal — rendered via Portal */}

@@ -258,8 +258,8 @@
 /* ─── STATS GRID ─────────────────────────────────────── */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.875rem;
   margin-bottom: 1.75rem;
 }
 
@@ -270,10 +270,7 @@
   gap: 1rem;
 }
 
-@media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
+@media (max-width: 600px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
   }

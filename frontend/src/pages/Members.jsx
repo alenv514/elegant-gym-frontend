@@ -196,77 +196,117 @@ export default function Members() {
           <p>No se encontraron miembros</p>
         </div>
       ) : (
-        <div className="table-wrapper">
-          <table className="table" aria-label="Lista de miembros">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th className="col-hide-mobile">Plan</th>
-                <th>Estado</th>
-                <th className="col-hide-mobile">Vencimiento</th>
-                <th style={{ width: 80 }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {members.map(m => (
-                <tr key={m.id}>
-                  <td
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => navigate(`/members/${m.id}`)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={e => e.key === 'Enter' && navigate(`/members/${m.id}`)}
-                    aria-label={`Ver ficha de ${m.nombre}`}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{
-                        width: 34,
-                        height: 34,
-                        borderRadius: '50%',
-                        background: 'var(--gold-subtle)',
-                        border: '1px solid var(--gold-border)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        color: 'var(--gold)',
-                        flexShrink: 0,
-                      }}>
-                        {m.nombre.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
-                      </div>
-                      <span style={{ fontWeight: 500 }}>{m.nombre}</span>
-                    </div>
-                  </td>
-                  <td className="col-hide-mobile" style={{ color: 'var(--text-muted)' }}>{m.plan_nombre || 'Sin Plan'}</td>
-                  <td>
-                    <span className={`badge ${ESTADO_BADGE[m.estado]}`}>
-                      {ESTADO_LABEL[m.estado]}
-                    </span>
-                  </td>
-                  <td className="col-hide-mobile" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                    {new Date(m.fecha_vencimiento).toLocaleDateString('es-MX')}
-                  </td>
-                  <td style={{ textAlign: 'right' }}>
-                    <button
-                      className="btn btn-ghost btn-sm btn-icon"
-                      title="Eliminar miembro"
-                      onClick={e => { e.stopPropagation(); setDeleteTarget(m) }}
-                      style={{ color: 'var(--danger)', opacity: 0.6 }}
-                      onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                      onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
-                    >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                      </svg>
-                    </button>
-                  </td>
+        <>
+          {/* Desktop: table */}
+          <div className="table-wrapper desktop-only">
+            <table className="table" aria-label="Lista de miembros">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Plan</th>
+                  <th>Estado</th>
+                  <th>Vencimiento</th>
+                  <th style={{ width: 80 }}></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {members.map(m => (
+                  <tr key={m.id}>
+                    <td
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => navigate(`/members/${m.id}`)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={e => e.key === 'Enter' && navigate(`/members/${m.id}`)}
+                      aria-label={`Ver ficha de ${m.nombre}`}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{
+                          width: 34, height: 34, borderRadius: '50%',
+                          background: 'var(--gold-subtle)', border: '1px solid var(--gold-border)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '0.75rem', fontWeight: 600, color: 'var(--gold)', flexShrink: 0,
+                        }}>
+                          {m.nombre.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                        </div>
+                        <span style={{ fontWeight: 500 }}>{m.nombre}</span>
+                      </div>
+                    </td>
+                    <td style={{ color: 'var(--text-muted)' }}>{m.plan_nombre || 'Sin Plan'}</td>
+                    <td>
+                      <span className={`badge ${ESTADO_BADGE[m.estado]}`}>
+                        {ESTADO_LABEL[m.estado]}
+                      </span>
+                    </td>
+                    <td style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                      {new Date(m.fecha_vencimiento).toLocaleDateString('es-MX')}
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button
+                        className="btn btn-ghost btn-sm btn-icon"
+                        title="Eliminar miembro"
+                        onClick={e => { e.stopPropagation(); setDeleteTarget(m) }}
+                        style={{ color: 'var(--danger)', opacity: 0.6 }}
+                        onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                        onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: card list */}
+          <div className="mobile-card-list mobile-only">
+            {members.map(m => (
+              <div
+                key={m.id}
+                className="mobile-list-card mobile-list-card--clickable"
+                onClick={() => navigate(`/members/${m.id}`)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={e => e.key === 'Enter' && navigate(`/members/${m.id}`)}
+              >
+                <div className="mobile-list-card-row">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minWidth: 0 }}>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                      background: 'var(--gold-subtle)', border: '1px solid var(--gold-border)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '0.7rem', fontWeight: 600, color: 'var(--gold)',
+                    }}>
+                      {m.nombre.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                    </div>
+                    <span className="mobile-list-card-name">{m.nombre}</span>
+                  </div>
+                  <span className={`badge ${ESTADO_BADGE[m.estado]}`}>{ESTADO_LABEL[m.estado]}</span>
+                </div>
+                <div className="mobile-list-card-row">
+                  <span className="mobile-list-card-sub">
+                    {m.plan_nombre || 'Sin plan'} · {new Date(m.fecha_vencimiento).toLocaleDateString('es-MX')}
+                  </span>
+                  <button
+                    className="btn btn-ghost btn-sm btn-icon"
+                    title="Eliminar miembro"
+                    onClick={e => { e.stopPropagation(); setDeleteTarget(m) }}
+                    style={{ color: 'var(--danger)', opacity: 0.7 }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* New member creation modal — rendered via Portal to document.body */}

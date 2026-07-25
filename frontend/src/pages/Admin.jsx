@@ -95,55 +95,85 @@ export default function Admin() {
           <p>No se encontraron gimnasios registrados</p>
         </div>
       ) : (
-        <div className="table-wrapper">
-          <table className="table" aria-label="Lista de gyms">
-            <thead>
-              <tr>
-                <th>Gym</th>
-                <th>Ciudad</th>
-                <th>Estado</th>
-                <th>Último pago</th>
-                <th>Vence</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {gyms.map(gym => (
-                <tr key={gym.id}>
-                  <td>
-                    <div style={{ fontWeight: 500, color: 'var(--text)' }}>{gym.nombre}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{gym.email_contacto}</div>
-                  </td>
-                  <td style={{ color: 'var(--text-muted)' }}>{gym.ciudad || '—'}</td>
-                  <td>
-                    <span className={`badge ${gym.suscripcion_activa ? 'badge-success' : 'badge-danger'}`}>
-                      {gym.suscripcion_activa ? 'Activo' : 'Suspendido'}
-                    </span>
-                  </td>
-                  <td style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                    {gym.fecha_ultimo_pago ? new Date(gym.fecha_ultimo_pago).toLocaleDateString('es-MX') : '—'}
-                  </td>
-                  <td style={{ fontSize: '0.875rem' }}>
-                    <span style={{ color: gym.suscripcion_activa ? 'var(--text-muted)' : 'var(--danger)', fontWeight: gym.suscripcion_activa ? 400 : 600 }}>
-                      {new Date(gym.fecha_vencimiento).toLocaleDateString('es-MX')}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-primary btn-sm"
-                      id={`btn-mark-paid-${gym.id}`}
-                      onClick={() => handleRecordPayment(gym.id)}
-                      disabled={actionLoadingId === gym.id}
-                      title="Marcar pago recibido para este mes"
-                    >
-                      {actionLoadingId === gym.id ? 'Registrando...' : '✓ Pago recibido'}
-                    </button>
-                  </td>
+        <>
+          {/* Desktop: table */}
+          <div className="table-wrapper desktop-only">
+            <table className="table" aria-label="Lista de gyms">
+              <thead>
+                <tr>
+                  <th>Gym</th>
+                  <th>Ciudad</th>
+                  <th>Estado</th>
+                  <th>Último pago</th>
+                  <th>Vence</th>
+                  <th>Acción</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {gyms.map(gym => (
+                  <tr key={gym.id}>
+                    <td>
+                      <div style={{ fontWeight: 500, color: 'var(--text)' }}>{gym.nombre}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{gym.email_contacto}</div>
+                    </td>
+                    <td style={{ color: 'var(--text-muted)' }}>{gym.ciudad || '—'}</td>
+                    <td>
+                      <span className={`badge ${gym.suscripcion_activa ? 'badge-success' : 'badge-danger'}`}>
+                        {gym.suscripcion_activa ? 'Activo' : 'Suspendido'}
+                      </span>
+                    </td>
+                    <td style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                      {gym.fecha_ultimo_pago ? new Date(gym.fecha_ultimo_pago).toLocaleDateString('es-MX') : '—'}
+                    </td>
+                    <td style={{ fontSize: '0.875rem' }}>
+                      <span style={{ color: gym.suscripcion_activa ? 'var(--text-muted)' : 'var(--danger)', fontWeight: gym.suscripcion_activa ? 400 : 600 }}>
+                        {new Date(gym.fecha_vencimiento).toLocaleDateString('es-MX')}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        id={`btn-mark-paid-${gym.id}`}
+                        onClick={() => handleRecordPayment(gym.id)}
+                        disabled={actionLoadingId === gym.id}
+                        title="Marcar pago recibido para este mes"
+                      >
+                        {actionLoadingId === gym.id ? 'Registrando...' : '✓ Pago recibido'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: card list */}
+          <div className="mobile-card-list mobile-only">
+            {gyms.map(gym => (
+              <div key={gym.id} className="mobile-list-card">
+                <div className="mobile-list-card-row">
+                  <span className="mobile-list-card-name">{gym.nombre}</span>
+                  <span className={`badge ${gym.suscripcion_activa ? 'badge-success' : 'badge-danger'}`}>
+                    {gym.suscripcion_activa ? 'Activo' : 'Suspendido'}
+                  </span>
+                </div>
+                <div className="mobile-list-card-row">
+                  <span className="mobile-list-card-sub">
+                    {gym.ciudad || '—'} · Vence {new Date(gym.fecha_vencimiento).toLocaleDateString('es-MX')}
+                  </span>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    id={`btn-mark-paid-mob-${gym.id}`}
+                    onClick={() => handleRecordPayment(gym.id)}
+                    disabled={actionLoadingId === gym.id}
+                  >
+                    {actionLoadingId === gym.id ? '...' : '✓ Pagado'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )
