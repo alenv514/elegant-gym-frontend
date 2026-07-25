@@ -1,6 +1,7 @@
 import express from 'express'
 import { authenticateToken } from '../middleware/auth.js'
 import { query } from '../config/db.js'
+import { calcularVencimiento } from '../utils/fechas.js'
 
 const router = express.Router()
 
@@ -73,8 +74,7 @@ router.post('/', async (req, res) => {
     
     let baseDate = currentVencimiento < today ? today : currentVencimiento
     
-    const newVencimiento = new Date(baseDate)
-    newVencimiento.setDate(newVencimiento.getDate() + member.duracion_dias)
+    const newVencimiento = calcularVencimiento(baseDate, member.duracion_dias)
 
     // 3. Register the payment in member_payments
     await query(

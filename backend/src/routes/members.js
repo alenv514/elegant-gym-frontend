@@ -1,6 +1,7 @@
 import express from 'express'
 import { authenticateToken } from '../middleware/auth.js'
 import { query } from '../config/db.js'
+import { calcularVencimiento } from '../utils/fechas.js'
 
 const router = express.Router()
 
@@ -154,8 +155,7 @@ router.post('/', async (req, res) => {
     }
 
     const start = fecha_inicio ? new Date(fecha_inicio) : new Date()
-    const vencimiento = new Date(start)
-    vencimiento.setDate(vencimiento.getDate() + plan.duracion_dias)
+    const vencimiento = calcularVencimiento(start, plan.duracion_dias)
 
     // 2. Insert member
     const newMemberRes = await query(

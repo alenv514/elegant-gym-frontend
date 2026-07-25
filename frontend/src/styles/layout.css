@@ -168,6 +168,58 @@
   gap: 0.75rem;
 }
 
+/* ─── PWA INSTALL BUTTON ─────────────────────────────── */
+.btn-install-pwa {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+  color: #0A0A0A;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  white-space: nowrap;
+}
+
+.btn-install-pwa:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3);
+}
+
+.btn-install-pwa:active {
+  transform: translateY(0);
+}
+
+.btn-install-pwa svg {
+  flex-shrink: 0;
+}
+
+.btn-install-pwa--ios {
+  background: var(--surface-3);
+  color: var(--text);
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.btn-install-pwa--ios:hover {
+  background: var(--surface-hover);
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .btn-install-pwa {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.625rem;
+  }
+  .btn-install-pwa span { /* hide label on mobile, show icon only */
+    display: none;
+  }
+}
+
 /* ─── MAIN CONTENT ───────────────────────────────────── */
 .main-content {
   margin-left: var(--sidebar-w);

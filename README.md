@@ -19,12 +19,12 @@ Los gimnasios independientes sufren dos problemas principales:
 
 ## 🛠️ Stack Tecnológico ($0 USD)
 
-| Componente | Tecnología | Plataforma | Costo |
-| :--- | :--- | :--- | :--- |
-| **Frontend PWA** | React 18 + Vite + Workbox | **Cloudflare Pages** | `$0` |
-| **Backend REST API** | Node.js + Express + node-cron | **Koyeb** (pendiente) | `$0` |
-| **Base de Datos** | PostgreSQL + 11 tablas | Supabase | `$0` |
-| **WhatsApp** | @whiskeysockets/baileys | Backend (local/nube) | `$0` |
+| Componente | Tecnología | Plataforma | Costo | Estado |
+| :--- | :--- | :--- | :--- | :--- |
+| **Frontend PWA** | React 18 + Vite + Workbox | **Cloudflare Pages** | `$0` | Desplegado y Activo ✅ |
+| **Backend REST API** | Node.js + Express + node-cron | **Railway** | `$0` (créditos) | Desplegado 24/7 ✅ |
+| **Base de Datos** | PostgreSQL + 11 tablas | **Supabase** | `$0` | Conectado y Activo ✅ |
+| **WhatsApp** | @whiskeysockets/baileys | Backend | `$0` | Activo (Railway) ✅ |
 
 ---
 
@@ -243,31 +243,16 @@ npm run dev   # http://localhost:5173
 ---
 
 ## ⏭️ Próximos Pasos / Roadmap
-
-### 🔜 Prioridad alta (despliegue)
-1. **🌐 Desplegar Backend en Koyeb**
-   - Subir backend a Koyeb (o Railway/Render)
-   - Configurar variables de entorno de producción
-   - El socket de WhatsApp necesita un servidor con soporte WebSocket (Koyeb sí lo soporta)
-
-2. **🔗 Conectar Frontend con Backend en producción**
-   - Actualizar `VITE_API_URL` en Cloudflare Pages con la URL del backend
-   - Re-desplegar frontend
-
-3. **🗄️ Migrar BD a producción**
-   - Crear proyecto en Supabase (gratis)
-   - Ejecutar schema.sql y seed_dev.sql en la BD de producción
-   - Actualizar DATABASE_URL en el backend
+ 
+### 🔜 Prioridad alta
+1. **📊 Vista de historial de recordatorios** — Página o sección donde se vean todos los mensajes enviados, a quién, estado y errores.
+2. **🧾 Reportes / Exportación** — Exportar lista de miembros a Excel/PDF y reporte de ingresos mensuales.
+3. **🔔 Más tipos de recordatorios WhatsApp** — Bienvenida al nuevo miembro, cumpleaños, promociones.
 
 ### 🔜 Prioridad media
-4. **📊 Vista de historial de recordatorios** — Página o sección donde se vean todos los mensajes enviados, a quién, estado y errores
-5. **🧾 Reportes / Exportación** — Exportar lista de miembros a Excel/PDF y reporte de ingresos mensuales
-6. **🔔 Más tipos de recordatorios WhatsApp** — Bienvenida al nuevo miembro, cumpleaños, promociones
-
-### 🔜 Prioridad baja
-7. **🌙 Modo claro / oscuro**
-8. **🎨 Personalización de marca** — que cada gym pueda subir su logo y colores
-9. **🤖 Chatbot simple** — para que los miembros consulten su saldo por WhatsApp
+4. **🌙 Modo claro / oscuro**
+5. **🎨 Personalización de marca** — que cada gym pueda subir su logo y colores.
+6. **🤖 Chatbot simple** — para que los miembros consulten su saldo por WhatsApp.
 
 ---
 
