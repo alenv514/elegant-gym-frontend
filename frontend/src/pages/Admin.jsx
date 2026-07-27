@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import api from '../utils/api'
+import { formatDate } from '../utils/format'
 
 export default function Admin() {
   const [gyms, setGyms] = useState([])
@@ -123,11 +124,11 @@ export default function Admin() {
                       </span>
                     </td>
                     <td style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                      {gym.fecha_ultimo_pago ? new Date(gym.fecha_ultimo_pago).toLocaleDateString('es-MX') : '—'}
+                      {gym.fecha_ultimo_pago ? formatDate(gym.fecha_ultimo_pago) : '—'}
                     </td>
                     <td style={{ fontSize: '0.875rem' }}>
                       <span style={{ color: gym.suscripcion_activa ? 'var(--text-muted)' : 'var(--danger)', fontWeight: gym.suscripcion_activa ? 400 : 600 }}>
-                        {new Date(gym.fecha_vencimiento).toLocaleDateString('es-MX')}
+                        {formatDate(gym.fecha_vencimiento)}
                       </span>
                     </td>
                     <td>
@@ -159,7 +160,7 @@ export default function Admin() {
                 </div>
                 <div className="mobile-list-card-row">
                   <span className="mobile-list-card-sub">
-                    {gym.ciudad || '—'} · Vence {new Date(gym.fecha_vencimiento).toLocaleDateString('es-MX')}
+                    {gym.ciudad || '—'} · Vence {formatDate(gym.fecha_vencimiento)}
                   </span>
                   <button
                     className="btn btn-primary btn-sm"

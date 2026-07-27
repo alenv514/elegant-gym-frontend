@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../utils/api'
+import { formatDate } from '../utils/format'
 
 function StatusBadge({ estado }) {
   const map = {
@@ -166,7 +167,7 @@ export default function Dashboard() {
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nombre}</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      {new Date(p.vencimiento).toLocaleDateString('es-MX')}
+                      {formatDate(p.vencimiento)}
                     </div>
                   </div>
                   <div style={{ flexShrink: 0 }}><StatusBadge estado={p.estado} /></div>

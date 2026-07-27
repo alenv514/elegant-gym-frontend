@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../utils/api'
 import Modal from '../components/ui/Modal'
+import { formatDate } from '../utils/format'
 
 // ─── IMC utility — single source of truth ────────────────
 function calcIMC(peso, altura) {
@@ -188,7 +189,7 @@ export default function MemberDetail() {
             <span className={`badge ${ESTADO_BADGE[member.estado]}`}>{ESTADO_LABEL[member.estado]}</span>
             <span className="badge badge-gold">{member.plan_nombre || 'Sin Plan'}</span>
             <span className="member-profile-expiry">
-              Vence: {new Date(member.fecha_vencimiento).toLocaleDateString('es-MX')}
+              Vence: {formatDate(member.fecha_vencimiento)}
             </span>
           </div>
         </div>
@@ -299,7 +300,7 @@ export default function MemberDetail() {
                     return (
                       <tr key={i}>
                         <td style={{ color: 'var(--text-muted)' }}>
-                          {new Date(h.fecha).toLocaleDateString('es-MX')}
+                          {formatDate(h.fecha)}
                         </td>
                         <td>{h.peso} kg</td>
                         <td>

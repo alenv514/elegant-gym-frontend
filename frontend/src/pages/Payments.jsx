@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../utils/api'
 import Modal from '../components/ui/Modal'
+import { formatDate } from '../utils/format'
 
 const METODO_BADGE = {
   'Efectivo':      'badge-success',
@@ -171,7 +172,7 @@ export default function Payments() {
                       </span>
                     </td>
                     <td style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                      {new Date(p.fecha_pago).toLocaleDateString('es-MX')}
+                      {formatDate(p.fecha_pago)}
                     </td>
                   </tr>
                 ))}
@@ -188,7 +189,7 @@ export default function Payments() {
                   <span className="mobile-list-card-amount">${Number(p.monto).toLocaleString()}</span>
                 </div>
                 <div className="mobile-list-card-row">
-                  <span className="mobile-list-card-sub">{p.plan_nombre || 'Sin plan'} · {new Date(p.fecha_pago).toLocaleDateString('es-MX')}</span>
+                  <span className="mobile-list-card-sub">{p.plan_nombre || 'Sin plan'} · {formatDate(p.fecha_pago)}</span>
                   <span className={`badge ${METODO_BADGE[p.metodo] ?? 'badge-muted'}`}>{p.metodo}</span>
                 </div>
               </div>

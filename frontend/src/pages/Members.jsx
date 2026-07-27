@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../utils/api'
 import Modal from '../components/ui/Modal'
+import { formatDate } from '../utils/format'
 
 const ESTADO_BADGE = {
   activo:     'badge-success',
@@ -239,7 +240,7 @@ export default function Members() {
                       </span>
                     </td>
                     <td style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                      {new Date(m.fecha_vencimiento).toLocaleDateString('es-MX')}
+                      {formatDate(m.fecha_vencimiento)}
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <button
@@ -289,7 +290,7 @@ export default function Members() {
                 </div>
                 <div className="mobile-list-card-row">
                   <span className="mobile-list-card-sub">
-                    {m.plan_nombre || 'Sin plan'} · {new Date(m.fecha_vencimiento).toLocaleDateString('es-MX')}
+                    {m.plan_nombre || 'Sin plan'} · {formatDate(m.fecha_vencimiento)}
                   </span>
                   <button
                     className="btn btn-ghost btn-sm btn-icon"
