@@ -34,6 +34,13 @@ function msgPorVencer(nombre, gymNombre) {
     `*${gymNombre}*`
 }
 
+function msgVenceHoy(nombre, gymNombre) {
+  return `👋 *Hola ${nombre}!*\n\n` +
+    `Te recordamos que tu membresía en *${gymNombre}* vence *hoy*. 📅\n\n` +
+    `Renueva hoy mismo para seguir disfrutando de tus entrenamientos sin interrupción. 💪🔥\n\n` +
+    `*${gymNombre}*`
+}
+
 function msgVencido(nombre, gymNombre) {
   return `👋 *Hola ${nombre}!*\n\n` +
     `Tu membresía en *${gymNombre}* ha *vencido*. ⏰\n\n` +
@@ -68,6 +75,7 @@ async function procesarGimnasio(gym) {
   const resumen = {
     gym: gym.nombre,
     por_vencer: { encontrados: 0, enviados: 0, fallidos: 0 },
+    vence_hoy: { encontrados: 0, enviados: 0, fallidos: 0 },
     vencidos: { encontrados: 0, enviados: 0, fallidos: 0 }
   }
 
@@ -92,7 +100,28 @@ async function procesarGimnasio(gym) {
     else resumen.por_vencer.fallidos++
   }
 
-  // ── 2. Miembros que vencieron hace exactamente 1 día ──
+  // ── 2. Miembros que vencen HOY ──
+  const venceHoy = await query(`
+    SELECT m.id, m.nombre, m.telefono
+    FROM members m
+    WHERE m.gym_id = $1
+      AND m.opt_in_whatsapp = true
+      AND m.fecha_vencimiento = CURRENT_DATE
+  `, [gym.id])
+
+  console.log(`   → ${venceHoy.rows.length} miembro(s) vencen hoy`)
+  resumen.vence_hoy.encontrados = venceHoy.rows.length
+
+  for (const member of venceHoy.rows) {
+    const ok = await enviarYLoggear(
+      gym.id, member, 'VENCE_HOY',
+      msgVenceHoy(member.nombre, gym.nombre)
+    )
+    if (ok) resumen.vence_hoy.enviados++
+    else resumen.vence_hoy.fallidos++
+  }
+
+  // ── 3. Miembros que vencieron hace exactamente 1 día ──
   const vencidos = await query(`
     SELECT m.id, m.nombre, m.telefono
     FROM members m
