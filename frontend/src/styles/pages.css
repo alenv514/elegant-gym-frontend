@@ -85,3 +85,87 @@
   font-weight: 600;
   min-width: 48px;
 }
+
+/* ─── MEMBER PROFILE HEADER ───────────────────────────── */
+.member-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.member-profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0A0A0A;
+  box-shadow: var(--shadow-gold);
+}
+
+.member-profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.member-profile-name {
+  font-family: var(--font-heading);
+  color: var(--text);
+  margin-bottom: 0.25rem;
+  font-size: 1.5rem;
+}
+
+.member-profile-badges {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.member-profile-expiry {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.member-profile-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .member-profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+  
+  .member-profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .member-profile-badges {
+    justify-content: center;
+  }
+
+  .member-profile-actions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .member-profile-actions .btn-text {
+    display: none;
+  }
+}

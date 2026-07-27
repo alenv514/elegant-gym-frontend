@@ -176,29 +176,23 @@ export default function MemberDetail() {
       </button>
 
       {/* Profile header */}
-      <div className="card" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-        <div style={{
-          width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
-          background: 'linear-gradient(135deg, var(--gold-dim), var(--gold))',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1.5rem', fontWeight: 700, color: '#0A0A0A',
-          boxShadow: 'var(--shadow-gold)',
-        }}>
+      <div className="member-profile-header card">
+        <div className="member-profile-avatar">
           {initials}
         </div>
-        <div style={{ flex: 1 }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', color: 'var(--text)', marginBottom: '0.25rem' }}>
+        <div className="member-profile-info">
+          <h2 className="member-profile-name">
             {member.nombre}
           </h2>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="member-profile-badges">
             <span className={`badge ${ESTADO_BADGE[member.estado]}`}>{ESTADO_LABEL[member.estado]}</span>
             <span className="badge badge-gold">{member.plan_nombre || 'Sin Plan'}</span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            <span className="member-profile-expiry">
               Vence: {new Date(member.fecha_vencimiento).toLocaleDateString('es-MX')}
             </span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className="member-profile-actions">
           <button className="btn btn-ghost btn-sm" id="btn-edit-member" onClick={() => openEditForm()}>Editar</button>
           <button
             className="btn btn-ghost btn-sm"
@@ -213,12 +207,12 @@ export default function MemberDetail() {
               <polyline points="3 6 5 6 21 6"/>
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
             </svg>
-            Eliminar
+            <span className="btn-text">Eliminar</span>
           </button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="dashboard-grid">
 
         {/* Datos de contacto */}
         <div className="card">
@@ -465,9 +459,11 @@ export default function MemberDetail() {
 
 function InfoRow({ label, value }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-      <span style={{ color: 'var(--text-muted)' }}>{label}</span>
-      <span style={{ color: 'var(--text)', fontWeight: 500 }}>{value}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', gap: '0.75rem', minWidth: 0 }}>
+      <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>{label}</span>
+      <span style={{ color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }} title={value}>
+        {value}
+      </span>
     </div>
   )
 }
