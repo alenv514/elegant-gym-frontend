@@ -328,8 +328,9 @@ export async function getWhatsAppSocket(gym_id) {
 
 /**
  * Sends a message from a gym's account to a client number.
- * Waits for WhatsApp server acknowledgment before resolving.
- * Throws 'Timed Out' if server doesn't confirm within 20 seconds.
+ * Resolves once the message has been queued by Baileys.
+ * Does NOT wait for delivery ACK — that would require incoming events
+ * which are suppressed by shouldIgnoreJid.
  */
 export async function sendWhatsAppMessage(gym_id, to, text) {
   const cleanTo = to.replace(/\D/g, '')
@@ -342,7 +343,7 @@ export async function sendWhatsAppMessage(gym_id, to, text) {
     throw new Error('El canal de WhatsApp no está conectado para este gimnasio')
   }
 
-  // Send the message and capture its ID for tracking
+  // Send the message — Baileys queues it to the WA servers
   const sentMsg = await socket.sendMessage(jid, { text })
   const msgId = sentMsg?.key?.id
 
@@ -351,29 +352,7 @@ export async function sendWhatsAppMessage(gym_id, to, text) {
     throw new Error('No se pudo obtener ID del mensaje')
   }
 
-  // Wait for WhatsApp server to acknowledge delivery (status >= SERVER_ACK)
-  await new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      socket.ev.off('messages.update', handler)
-      console.warn(`⏱️ Delivery timeout for msg ${msgId} to ${jid}`)
-      reject(new Error('Timed Out'))
-    }, 20000)
-
-    const handler = (updates) => {
-      for (const update of updates) {
-        if (update.key?.id === msgId && update.status >= 1) {
-          clearTimeout(timeout)
-          socket.ev.off('messages.update', handler)
-          resolve()
-          return
-        }
-      }
-    }
-
-    socket.ev.on('messages.update', handler)
-  })
-
-  console.log(`✉️ Message delivered to ${jid}`)
+  console.log(`✉️  Message sent to ${jid} (ID: ${msgId})`)
 }
 
 /**
