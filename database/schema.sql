@@ -111,7 +111,7 @@ CREATE TABLE whatsapp_sessions (
 );
 
 -- 11. RECORDATORIOS LOG (Audit logs for sent reminders)
-CREATE TYPE reminder_type AS ENUM ('POR_VENCER_2_DIAS', 'VENCIDO');
+CREATE TYPE reminder_type AS ENUM ('POR_VENCER_2_DIAS', 'VENCE_HOY', 'VENCIDO');
 CREATE TYPE reminder_status AS ENUM ('ENVIADO', 'FALLIDO');
 
 CREATE TABLE recordatorios_log (

@@ -89,7 +89,7 @@ async function createAndMonitorSocket(gym_id, onQrCallback, isRetry = false) {
       shouldIgnoreJid: () => true,
       connectTimeoutMs: 60_000,
       keepAliveIntervalMs: 25_000,
-      emitOwnEvents: false,
+      emitOwnEvents: true,
       downloadHistory: false,
       linkPreviewImage: false,
     })
@@ -328,6 +328,8 @@ export async function getWhatsAppSocket(gym_id) {
 
 /**
  * Sends a message from a gym's account to a client number.
+ * Waits for WhatsApp server acknowledgment before resolving.
+ * Throws 'Timed Out' if server doesn't confirm within 20 seconds.
  */
 export async function sendWhatsAppMessage(gym_id, to, text) {
   const cleanTo = to.replace(/\D/g, '')
@@ -340,8 +342,38 @@ export async function sendWhatsAppMessage(gym_id, to, text) {
     throw new Error('El canal de WhatsApp no está conectado para este gimnasio')
   }
 
-  await socket.sendMessage(jid, { text })
-  console.log(`✉️ Message sent from gym_id ${gym_id} to ${jid}`)
+  // Send the message and capture its ID for tracking
+  const sentMsg = await socket.sendMessage(jid, { text })
+  const msgId = sentMsg?.key?.id
+
+  if (!msgId) {
+    console.error(`❌ No message ID returned for gym_id ${gym_id} to ${jid}`)
+    throw new Error('No se pudo obtener ID del mensaje')
+  }
+
+  // Wait for WhatsApp server to acknowledge delivery (status >= SERVER_ACK)
+  await new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      socket.ev.off('messages.update', handler)
+      console.warn(`⏱️ Delivery timeout for msg ${msgId} to ${jid}`)
+      reject(new Error('Timed Out'))
+    }, 20000)
+
+    const handler = (updates) => {
+      for (const update of updates) {
+        if (update.key?.id === msgId && update.status >= 1) {
+          clearTimeout(timeout)
+          socket.ev.off('messages.update', handler)
+          resolve()
+          return
+        }
+      }
+    }
+
+    socket.ev.on('messages.update', handler)
+  })
+
+  console.log(`✉️ Message delivered to ${jid}`)
 }
 
 /**
