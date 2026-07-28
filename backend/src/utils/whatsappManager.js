@@ -345,6 +345,43 @@ export async function sendWhatsAppMessage(gym_id, to, text) {
 }
 
 /**
+ * Reconecta sesiones de WhatsApp que tengan credenciales guardadas en disco.
+ * Se llama automáticamente al arrancar el servidor.
+ * No espera a que conecten — los eventos del socket manejan el estado automáticamente.
+ */
+export async function reconectarSesionesActivas() {
+  const sessionsDir = path.join(process.cwd(), 'sessions')
+  if (!fs.existsSync(sessionsDir)) {
+    console.log('📂 No hay directorio de sesiones — nada que reconectar')
+    return
+  }
+
+  const gymFolders = fs.readdirSync(sessionsDir).filter(f => f.startsWith('gym_'))
+  if (gymFolders.length === 0) {
+    console.log('📂 No hay sesiones guardadas en disco')
+    return
+  }
+
+  console.log(`🔄 Reconectando ${gymFolders.length} sesión(es) de WhatsApp...`)
+
+  for (const folder of gymFolders) {
+    const gymId = parseInt(folder.replace('gym_', ''), 10)
+    if (isNaN(gymId)) continue
+
+    const credsPath = path.join(sessionsDir, folder, 'creds.json')
+    if (!fs.existsSync(credsPath)) continue
+
+    console.log(`🔄 Reconectando gym_id: ${gymId}...`)
+
+    // createAndMonitorSocket actualiza DB y estado en memoria automáticamente
+    // via connection.update event handler (CONECTADO, DESCONECTADO, etc.)
+    createAndMonitorSocket(gymId, null, false).catch(err =>
+      console.error(`❌ Error reconectando gym_id ${gymId}: ${err.message}`)
+    )
+  }
+}
+
+/**
  * Logs out and clears connection from memory & disk.
  */
 export async function logoutWhatsApp(gym_id) {

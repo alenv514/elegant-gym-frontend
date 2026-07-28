@@ -135,6 +135,10 @@ p { color: var(--text-muted); font-size: 0.9375rem; }
 }
 
 /* ─── GOLD GRADIENT ANIMATION ────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes shimmer {
   0%   { background-position: -200% center; }
   100% { background-position:  200% center; }

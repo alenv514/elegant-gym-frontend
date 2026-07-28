@@ -183,6 +183,8 @@ async function enviarYLoggear(gymId, member, tipo, mensaje) {
  * Inicia el cron job de recordatorios automáticos.
  * Se ejecuta todos los días a las 09:00 AM (hora del servidor).
  */
+export { procesarGimnasio }
+
 export async function iniciarRecordatorios() {
   await asegurarTablaLogs()
   console.log('⏰ Programando recordatorios automáticos para las 09:00 AM...')

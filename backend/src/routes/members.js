@@ -2,6 +2,7 @@ import express from 'express'
 import { authenticateToken } from '../middleware/auth.js'
 import { query } from '../config/db.js'
 import { calcularVencimiento } from '../utils/fechas.js'
+import { procesarGimnasio } from '../services/recordatorios.js'
 
 const router = express.Router()
 
@@ -250,6 +251,39 @@ router.post('/:id/metrics', async (req, res) => {
   } catch (err) {
     console.error('Error adding metrics:', err)
     return res.status(500).json({ error: 'Error al registrar métricas corporales' })
+  }
+})
+
+/**
+ * POST /api/members/recordatorios
+ * Manually triggers WhatsApp reminders for memberships that are:
+ * - Expiring in 2 days
+ * - Expiring today
+ * - Expired 1 day ago
+ */
+router.post('/recordatorios', async (req, res) => {
+  try {
+    const gym = {
+      id: req.user.gym_id,
+      nombre: req.user.gym_nombre || 'Tu gimnasio'
+    }
+
+    console.log(`🧪 Recordatorio manual solicitado por ${req.user.nombre} para: ${gym.nombre}`)
+    const resumen = await procesarGimnasio(gym)
+
+    return res.json({
+      success: true,
+      resumen: {
+        por_vencer: resumen.por_vencer.enviados,
+        vence_hoy: resumen.vence_hoy.enviados,
+        vencidos: resumen.vencidos.enviados,
+        total: resumen.por_vencer.enviados + resumen.vence_hoy.enviados + resumen.vencidos.enviados,
+        fallidos: resumen.por_vencer.fallidos + resumen.vence_hoy.fallidos + resumen.vencidos.fallidos
+      }
+    })
+  } catch (err) {
+    console.error('Error al ejecutar recordatorios manuales:', err)
+    return res.status(500).json({ error: 'Error al enviar recordatorios' })
   }
 })
 

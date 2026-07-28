@@ -9,6 +9,7 @@ import whatsappRouter from '../src/routes/whatsapp.js'
 // Import cron services
 import { iniciarRecordatorios } from '../src/services/recordatorios.js'
 import { iniciarVerificacionSuscripciones } from '../src/services/suscripciones.js'
+import { reconectarSesionesActivas } from '../src/utils/whatsappManager.js'
 import membersRouter from '../src/routes/members.js'
 import classesRouter from '../src/routes/classes.js'
 import paymentsRouter from '../src/routes/payments.js'
@@ -66,6 +67,9 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 Elegant for Gym Backend running on port ${PORT}`)
   
+  // Reconnect any existing WhatsApp sessions that have saved credentials
+  reconectarSesionesActivas()
+
   // Start automatic WhatsApp reminders (daily at 09:00 AM)
   iniciarRecordatorios().catch(err => console.error('❌ Error al iniciar recordatorios:', err.message))
   // Start automatic SaaS subscription verification (daily at 09:00 AM)
