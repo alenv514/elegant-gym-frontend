@@ -333,8 +333,13 @@ export async function getWhatsAppSocket(gym_id) {
  * which are suppressed by shouldIgnoreJid.
  */
 export async function sendWhatsAppMessage(gym_id, to, text) {
-  const cleanTo = to.replace(/\D/g, '')
+  let cleanTo = (to || '').replace(/\D/g, '')
   if (!cleanTo) throw new Error('Número de teléfono inválido')
+
+  // Auto-format local Ecuador numbers (e.g. 0991234567 -> 593991234567)
+  if (cleanTo.startsWith('0')) {
+    cleanTo = '593' + cleanTo.substring(1)
+  }
 
   const jid = `${cleanTo}@s.whatsapp.net`
   const socket = await getWhatsAppSocket(gym_id)
@@ -343,8 +348,14 @@ export async function sendWhatsAppMessage(gym_id, to, text) {
     throw new Error('El canal de WhatsApp no está conectado para este gimnasio')
   }
 
-  // Send the message — Baileys queues it to the WA servers
-  const sentMsg = await socket.sendMessage(jid, { text })
+  // Send message with 8-second safety timeout so invalid/hanging numbers don't block batch execution
+  const sentMsg = await Promise.race([
+    socket.sendMessage(jid, { text }),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('WhatsApp server timeout (8s limit)')), 8000)
+    )
+  ])
+
   const msgId = sentMsg?.key?.id
 
   if (!msgId) {

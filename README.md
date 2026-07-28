@@ -246,7 +246,7 @@ npm run dev   # http://localhost:5173
  
 ### 🔜 Prioridad alta
 1. **📊 Vista de historial de recordatorios** — Página o sección donde se vean todos los mensajes enviados, a quién, estado y errores.
-2. **🧾 Reportes / Exportación** — Exportar lista de miembros a Excel/PDF y reporte de ingresos mensuales.
+2. **🧾 Reportes / Exportación** — Exportar lista de miembros a Excel/PDF y reporte de ingresos mensuales
 3. **🔔 Más tipos de recordatorios WhatsApp** — Bienvenida al nuevo miembro, cumpleaños, promociones.
 
 ### 🔜 Prioridad media
