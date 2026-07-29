@@ -187,9 +187,9 @@ export { procesarGimnasio }
 
 export async function iniciarRecordatorios() {
   await asegurarTablaLogs()
-  console.log('⏰ Programando recordatorios automáticos para las 09:00 AM...')
+  console.log('⏰ Programando recordatorios automáticos para las 09:40 AM...')
 
-  const task = cron.schedule('0 9 * * *', async () => {
+  const task = cron.schedule('40 9 * * *', async () => {
     console.log('⏰═══════════════════════════════════════════')
     console.log('⏰ Ejecutando recordatorios automáticos...')
     console.log(`⏰ Fecha: ${new Date().toLocaleDateString('es-EC', { timeZone: 'America/Guayaquil' })}`)
@@ -211,7 +211,7 @@ export async function iniciarRecordatorios() {
     }
   })
 
-  console.log('✅ Recordatorios programados (09:00 AM todos los días)')
+  console.log('✅ Recordatorios programados (09:40 AM todos los días)')
   return task
 }
 
