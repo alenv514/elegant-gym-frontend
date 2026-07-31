@@ -134,10 +134,16 @@ export default function Classes() {
   async function openViewMembers(cls) {
     setMembersClass(cls)
     setMembersList([])
+    setSelectedEnrollId('')
+    setEnrollSearch('')
     setMembersOpen(true)
     try {
-      const res = await api.get(`/classes/${cls.id}/members`)
-      setMembersList(res.data)
+      const [membersRes, optionsRes] = await Promise.all([
+        api.get(`/classes/${cls.id}/members`),
+        api.get('/members', { params: { status: 'todos' } })
+      ])
+      setMembersList(membersRes.data)
+      setEnrollOptions(optionsRes.data)
     } catch (err) {
       console.error('Error fetching members:', err)
     }
@@ -326,64 +332,22 @@ export default function Classes() {
           {editingClass && (
             <div className="input-group" style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
               <label className="input-label">
-                Miembros inscritos: <strong>{editingClass.inscritos}/{editingClass.capacidad_max}</strong>
+                Inscribir miembro a esta clase ({editingClass.inscritos}/{editingClass.capacidad_max}):
               </label>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <div style={{ flex: 1, position: 'relative' }}>
-                  <svg style={{
-                    position: 'absolute', left: 10, top: '50%', marginTop: -8,
-                    color: 'var(--text-faint)', pointerEvents: 'none'
-                  }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                  </svg>
-                  <input
-                    className="input"
-                    type="text"
-                    placeholder="Buscar miembro por nombre..."
-                    value={enrollSearch}
-                    onChange={e => {
-                      setEnrollSearch(e.target.value)
-                      setSelectedEnrollId('')
-                    }}
-                    style={{ paddingLeft: '2rem' }}
-                  />
-                  {enrollSearch && !selectedEnrollId && (
-                    <div style={{
-                      position: 'absolute', top: '100%', left: 0, right: 0,
-                      background: 'var(--bg-card)', border: '1px solid var(--border)',
-                      borderRadius: 'var(--radius-sm)', maxHeight: 180, overflowY: 'auto',
-                      zIndex: 10, marginTop: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
-                    }}>
-                      {enrollOptions
-                        .filter(m => m.nombre.toLowerCase().includes(enrollSearch.toLowerCase()))
-                        .map(m => (
-                          <div key={m.id}
-                            onClick={() => {
-                              setSelectedEnrollId(m.id)
-                              setEnrollSearch(m.nombre)
-                            }}
-                            style={{
-                              padding: '0.5rem 0.75rem', cursor: 'pointer',
-                              fontSize: '0.875rem', color: 'var(--text)',
-                              borderBottom: '1px solid var(--border)'
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                          >
-                            {m.nombre}
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.5rem' }}>
-                              {m.plan_nombre || ''}
-                            </span>
-                          </div>
-                        ))}
-                      {enrollOptions.filter(m => m.nombre.toLowerCase().includes(enrollSearch.toLowerCase())).length === 0 && (
-                        <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                          Sin resultados
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <select
+                  className="input"
+                  value={selectedEnrollId}
+                  onChange={e => setSelectedEnrollId(e.target.value)}
+                  style={{ flex: 1 }}
+                >
+                  <option value="">-- Seleccionar miembro --</option>
+                  {enrollOptions.map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.nombre} ({m.plan_nombre || 'Sin plan'})
+                    </option>
+                  ))}
+                </select>
                 <button
                   type="button" className="btn btn-primary btn-sm"
                   disabled={!selectedEnrollId || enrolling}
@@ -393,7 +357,6 @@ export default function Classes() {
                     try {
                       await api.post(`/classes/${editingClass.id}/enroll`, { member_id: Number(selectedEnrollId) })
                       setSelectedEnrollId('')
-                      setEnrollSearch('')
                       setEditingClass(prev => ({ ...prev, inscritos: prev.inscritos + 1 }))
                       setTriggerFetch(v => v + 1)
                     } catch (err) {
@@ -403,7 +366,7 @@ export default function Classes() {
                     }
                   }}
                 >
-                  {enrolling ? '...' : 'Agregar'}
+                  {enrolling ? '...' : 'Inscribir'}
                 </button>
               </div>
             </div>
@@ -420,10 +383,56 @@ export default function Classes() {
 
       {/* ── View Members Modal ── */}
       <Modal open={membersOpen} onClose={() => setMembersOpen(false)} title={`Miembros - ${membersClass?.nombre || ''}`}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Enrollment Search Bar */}
+          <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+            <label className="input-label" style={{ marginBottom: '0.35rem' }}>
+              Inscribir miembro a esta clase:
+            </label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <select
+                className="input"
+                value={selectedEnrollId}
+                onChange={e => setSelectedEnrollId(e.target.value)}
+                style={{ flex: 1 }}
+              >
+                <option value="">-- Seleccionar miembro --</option>
+                {enrollOptions
+                  .filter(m => !membersList.some(enrolled => enrolled.id === m.id))
+                  .map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.nombre} ({m.plan_nombre || 'Sin plan'})
+                    </option>
+                  ))}
+              </select>
+              <button
+                type="button" className="btn btn-primary btn-sm"
+                disabled={!selectedEnrollId || enrolling}
+                style={{ whiteSpace: 'nowrap' }}
+                onClick={async () => {
+                  setEnrolling(true)
+                  try {
+                    await api.post(`/classes/${membersClass.id}/enroll`, { member_id: Number(selectedEnrollId) })
+                    setSelectedEnrollId('')
+                    const res = await api.get(`/classes/${membersClass.id}/members`)
+                    setMembersList(res.data)
+                    setTriggerFetch(v => v + 1)
+                  } catch (err) {
+                    alert(err.response?.data?.error || 'Error al inscribir')
+                  } finally {
+                    setEnrolling(false)
+                  }
+                }}
+              >
+                {enrolling ? '...' : 'Inscribir'}
+              </button>
+            </div>
+          </div>
+
+          {/* Enrolled Members List */}
           {membersList.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              No hay miembros registrados aún
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center', padding: '1rem 0' }}>
+              No hay miembros inscritos en esta clase aún.
             </p>
           ) : (
             membersList.map(m => (
@@ -435,12 +444,36 @@ export default function Classes() {
                   <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--text)' }}>{m.nombre}</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{m.plan_nombre || 'Sin plan'}</div>
                 </div>
-                <span className={`badge ${
-                  m.estado === 'activo' ? 'badge-success' :
-                  m.estado === 'por_vencer' ? 'badge-warning' : 'badge-danger'
-                }`}>
-                  {m.estado === 'activo' ? 'Al día' : m.estado === 'por_vencer' ? 'Por vencer' : 'Vencido'}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span className={`badge ${
+                    m.estado === 'activo' ? 'badge-success' :
+                    m.estado === 'por_vencer' ? 'badge-warning' : 'badge-danger'
+                  }`}>
+                    {m.estado === 'activo' ? 'Al día' : m.estado === 'por_vencer' ? 'Por vencer' : 'Vencido'}
+                  </span>
+                  <button
+                    className="btn btn-ghost btn-sm btn-icon"
+                    title="Desinscribir de la clase"
+                    onClick={async () => {
+                      try {
+                        await api.delete(`/classes/${membersClass.id}/enroll/${m.id}`)
+                        const res = await api.get(`/classes/${membersClass.id}/members`)
+                        setMembersList(res.data)
+                        setTriggerFetch(v => v + 1)
+                      } catch (err) {
+                        alert(err.response?.data?.error || 'Error al remover miembro')
+                      }
+                    }}
+                    style={{ color: 'var(--danger)', opacity: 0.6 }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             ))
           )}

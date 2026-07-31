@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../utils/api'
 import { formatDate } from '../utils/format'
@@ -13,9 +14,19 @@ function StatusBadge({ estado }) {
   return <span className={`badge ${cls}`}>{label}</span>
 }
 
-function StatCard({ label, value, sub, accent }) {
+function StatCard({ label, value, sub, accent, onClick }) {
   return (
-    <div className="stat-card">
+    <div
+      className="stat-card"
+      onClick={onClick}
+      style={{
+        cursor: onClick ? 'pointer' : 'default',
+        userSelect: 'none'
+      }}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={e => e.key === 'Enter' && onClick && onClick()}
+    >
       <span className="stat-label">{label}</span>
       <span className="stat-value" style={accent ? { color: accent } : {}}>
         {value}
@@ -27,6 +38,7 @@ function StatCard({ label, value, sub, accent }) {
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -94,22 +106,26 @@ export default function Dashboard() {
           label="Miembros activos"
           value={data?.miembrosActivos || 0}
           sub="En tu gym"
+          onClick={() => navigate('/members')}
         />
         <StatCard
           label="Clases"
           value={data?.clasesDehoy || 0}
           sub="En el sistema"
+          onClick={() => navigate('/classes')}
         />
         <StatCard
           label="Pagos pendientes"
           value={data?.pagosPendientes || 0}
           sub="Vencen pronto"
           accent="var(--warning)"
+          onClick={() => navigate('/members')}
         />
         <StatCard
           label="Ingresos del mes"
           value={`$${(data?.ingresosMes || 0).toLocaleString()}`}
           sub="Registrados"
+          onClick={() => navigate('/payments')}
         />
       </div>
 
@@ -118,7 +134,13 @@ export default function Dashboard() {
 
         {/* Clases del día */}
         <div className="card">
-          <div className="card-header">
+          <div
+            className="card-header"
+            onClick={() => navigate('/classes')}
+            style={{ cursor: 'pointer' }}
+            role="button"
+            tabIndex={0}
+          >
             <span className="card-title">Clases programadas</span>
             <span className="badge badge-gold">{(data?.clasesHoy || []).length} clases</span>
           </div>
@@ -127,7 +149,14 @@ export default function Dashboard() {
               <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>No hay clases registradas hoy</p>
             ) : (
               data.clasesHoy.map(clase => (
-                <div key={clase.id} className="clase-row">
+                <div
+                  key={clase.id}
+                  className="clase-row"
+                  onClick={() => navigate('/classes')}
+                  style={{ cursor: 'pointer' }}
+                  role="button"
+                  tabIndex={0}
+                >
                   <div className="clase-time">{clase.hora}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--text)' }}>
@@ -154,7 +183,13 @@ export default function Dashboard() {
 
         {/* Pagos próximos a vencer */}
         <div className="card">
-          <div className="card-header">
+          <div
+            className="card-header"
+            onClick={() => navigate('/members')}
+            style={{ cursor: 'pointer' }}
+            role="button"
+            tabIndex={0}
+          >
             <span className="card-title">Pagos por atender</span>
             <span className="badge badge-warning">{(data?.pagosProximos || []).length}</span>
           </div>
@@ -163,7 +198,16 @@ export default function Dashboard() {
               <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>No hay deudas ni vencimientos pendientes</p>
             ) : (
               data.pagosProximos.map(p => (
-                <div key={p.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                <div
+                  key={p.id}
+                  onClick={() => navigate(`/members/${p.id}`)}
+                  style={{
+                    display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+                    gap: '0.5rem', cursor: 'pointer', padding: '0.25rem 0'
+                  }}
+                  role="button"
+                  tabIndex={0}
+                >
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nombre}</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>

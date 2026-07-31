@@ -27,11 +27,13 @@ export default function Members() {
   // New member modal states
   const [modalOpen, setModalOpen] = useState(false)
   const [plans, setPlans] = useState([])
+  const [classesList, setClassesList] = useState([])
   const [form, setForm] = useState({
     nombre: '',
     email: '',
     telefono: '',
     plan_id: '',
+    class_id: '',
     fecha_inicio: new Date().toISOString().split('T')[0],
     opt_in_whatsapp: true
   })
@@ -146,19 +148,23 @@ export default function Members() {
     }
   }, [search, filter, triggerFetch])
 
-  // Fetch gym plans once when the modal is opened
+  // Fetch gym plans and classes once when the modal is opened
   async function handleOpenModal() {
     setModalOpen(true)
     setSubmitError('')
     try {
-      const res = await api.get('/plans')
-      setPlans(res.data)
-      if (res.data.length > 0) {
-        setForm(prev => ({ ...prev, plan_id: res.data[0].id }))
+      const [plansRes, classesRes] = await Promise.all([
+        api.get('/plans'),
+        api.get('/classes')
+      ])
+      setPlans(plansRes.data)
+      setClassesList(classesRes.data)
+      if (plansRes.data.length > 0) {
+        setForm(prev => ({ ...prev, plan_id: plansRes.data[0].id }))
       }
     } catch (err) {
-      console.error('Error loading plans:', err)
-      setSubmitError('No se pudieron cargar los planes de membresía.')
+      console.error('Error loading plans/classes:', err)
+      setSubmitError('No se pudieron cargar los datos del gimnasio.')
     }
   }
 
@@ -172,16 +178,24 @@ export default function Members() {
     setSubmitError('')
 
     try {
-      await api.post('/members', {
+      const res = await api.post('/members', {
         ...form,
         plan_id: Number(form.plan_id)
       })
+
+      if (form.class_id && res.data?.id) {
+        await api.post(`/classes/${form.class_id}/enroll`, { member_id: res.data.id }).catch(err => {
+          console.warn('Could not auto-enroll member:', err)
+        })
+      }
+
       // Clear form and close modal
       setForm({
         nombre: '',
         email: '',
         telefono: '',
         plan_id: plans[0]?.id || '',
+        class_id: '',
         fecha_inicio: new Date().toISOString().split('T')[0],
         opt_in_whatsapp: true
       })
@@ -544,6 +558,24 @@ export default function Members() {
                 required
               />
             </div>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="member-class">Clase (opcional)</label>
+            <select
+              id="member-class"
+              className="input"
+              name="class_id"
+              value={form.class_id}
+              onChange={handleInputChange}
+            >
+              <option value="">Sin clase asignada</option>
+              {classesList.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre} ({c.inscritos || 0}/{c.capacidad_max} inscritos)
+                </option>
+              ))}
+            </select>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
