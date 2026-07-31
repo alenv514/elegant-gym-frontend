@@ -483,10 +483,10 @@ export default function WhatsApp() {
               paddingLeft: '1.25rem',
               margin: 0,
             }}>
-              <li>Se envían automáticamente todos los días a las 9:00 AM</li>
-              <li>Avisan a los miembros que su membresía vence en 2 días</li>
-              <li>Notifican a los miembros con membresía vencida hace 1 día</li>
+              <li>Se envían automáticamente todos los días a las 8:00 AM</li>
+              <li>Notifican al miembro el día exacto en que vence su membresía</li>
               <li>Solo se envían a miembros con WhatsApp habilitado</li>
+              <li>Recibirás un resumen diario con el total de mensajes enviados</li>
             </ul>
           </div>
         </div>
