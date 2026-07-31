@@ -201,7 +201,7 @@ export default function Members() {
           <h2 className="page-title">Miembros</h2>
           <p className="page-subtitle">{members.length} miembros registrados</p>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', rowGap: '0.5rem' }}>
           <button
             className="btn btn-ghost btn-sm"
             id="btn-send-reminders"
