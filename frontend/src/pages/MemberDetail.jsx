@@ -194,6 +194,23 @@ export default function MemberDetail() {
           </div>
         </div>
         <div className="member-profile-actions">
+          {member.telefono && (
+            <a
+              href={`https://wa.me/${member.telefono.replace(/\D/g, '').replace(/^0/, '593')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-ghost btn-sm"
+              id="btn-whatsapp-member"
+              title={`Abrir WhatsApp de ${member.nombre}`}
+              style={{ color: 'var(--gold)', border: '1px solid var(--gold-border)' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                <path d="M12.05 2C6.496 2 2.013 6.48 2.013 12.029c0 1.867.487 3.63 1.337 5.162L2 22l4.946-1.302a10.04 10.04 0 0 0 5.104 1.386h.004C17.608 22.084 22 17.6 22 12.05 22 6.498 17.608 2.002 12.05 2zm0 18.344a8.32 8.32 0 0 1-4.251-1.163l-.305-.18-3.153.829.842-3.074-.199-.317A8.297 8.297 0 0 1 3.723 12.05c0-4.593 3.739-8.328 8.327-8.328 4.592 0 8.33 3.735 8.33 8.328 0 4.595-3.738 8.294-8.33 8.294z"/>
+              </svg>
+              WhatsApp
+            </a>
+          )}
           <button className="btn btn-ghost btn-sm" id="btn-edit-member" onClick={() => openEditForm()}>Editar</button>
           <button
             className="btn btn-ghost btn-sm"
@@ -205,8 +222,7 @@ export default function MemberDetail() {
             title="Eliminar miembro"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
             </svg>
             <span className="btn-text">Eliminar</span>
           </button>

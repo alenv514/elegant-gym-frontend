@@ -1,6 +1,6 @@
 import cron from 'node-cron'
 import { query } from '../config/db.js'
-import { sendWhatsAppMessage } from '../utils/whatsappManager.js'
+import { sendWhatsAppMessage, sendViaBaileys } from '../utils/whatsappManager.js'
 
 // ─── Asegurar que la tabla de logs exista ─────────────────────────────────
 
@@ -19,8 +19,25 @@ async function asegurarTablaLogs() {
       )
     `)
     console.log('📋 Tabla recordatorios_log lista')
+    await limpiarHistorialAntiguo()
   } catch (err) {
     console.warn('⚠️ No se pudo crear recordatorios_log:', err.message)
+  }
+}
+
+/**
+ * Elimina automáticamente registros de historial con más de 2 días de antigüedad.
+ */
+export async function limpiarHistorialAntiguo() {
+  try {
+    const res = await query(
+      `DELETE FROM recordatorios_log WHERE fecha_envio < NOW() - INTERVAL '2 days'`
+    )
+    if (res.rowCount > 0) {
+      console.log(`🧹 Limpieza automática: Se eliminaron ${res.rowCount} registro(s) de recordatorios_log (> 2 días).`)
+    }
+  } catch (err) {
+    console.warn('⚠️ Error en limpieza automática de recordatorios_log:', err.message)
   }
 }
 
@@ -79,28 +96,7 @@ async function procesarGimnasio(gym) {
     vencidos: { encontrados: 0, enviados: 0, fallidos: 0 }
   }
 
-  // ── 1. Miembros que vencen en exactamente 2 días ──
-  const porVencer = await query(`
-    SELECT m.id, m.nombre, m.telefono
-    FROM members m
-    WHERE m.gym_id = $1
-      AND m.opt_in_whatsapp = true
-      AND m.fecha_vencimiento = CURRENT_DATE + INTERVAL '2 days'
-  `, [gym.id])
-
-  console.log(`   → ${porVencer.rows.length} miembro(s) vencen en 2 días`)
-  resumen.por_vencer.encontrados = porVencer.rows.length
-
-  for (const member of porVencer.rows) {
-    const ok = await enviarYLoggear(
-      gym.id, member, 'POR_VENCER_2_DIAS',
-      msgPorVencer(member.nombre, gym.nombre)
-    )
-    if (ok) resumen.por_vencer.enviados++
-    else resumen.por_vencer.fallidos++
-  }
-
-  // ── 2. Miembros que vencen HOY ──
+  // ── Único Recordatorio: Miembros que vencen HOY ──
   const venceHoy = await query(`
     SELECT m.id, m.nombre, m.telefono
     FROM members m
@@ -115,31 +111,31 @@ async function procesarGimnasio(gym) {
   for (const member of venceHoy.rows) {
     const ok = await enviarYLoggear(
       gym.id, member, 'VENCE_HOY',
-      msgVenceHoy(member.nombre, gym.nombre)
+      msgVenceHoy(member.nombre, gym.nombre), gym.nombre
     )
     if (ok) resumen.vence_hoy.enviados++
     else resumen.vence_hoy.fallidos++
+    await new Promise(r => setTimeout(r, 200))
   }
 
-  // ── 3. Miembros que vencieron hace exactamente 1 día ──
-  const vencidos = await query(`
-    SELECT m.id, m.nombre, m.telefono
-    FROM members m
-    WHERE m.gym_id = $1
-      AND m.opt_in_whatsapp = true
-      AND m.fecha_vencimiento = CURRENT_DATE - INTERVAL '1 day'
-  `, [gym.id])
+  // ── Notificación de resumen al dueño del gimnasio ──
+  if (resumen.vence_hoy.enviados > 0) {
+    try {
+      const ownerRes = await query(
+        `SELECT numero_telefono FROM whatsapp_sessions WHERE gym_id = $1 AND numero_telefono IS NOT NULL LIMIT 1`,
+        [gym.id]
+      )
+      const ownerPhone = ownerRes.rows[0]?.numero_telefono
+      if (ownerPhone) {
+        const summaryMsg = `📊 *Resumen de Recordatorios — ${gym.nombre}*\n\n` +
+          `Se enviaron ${resumen.vence_hoy.enviados} recordatorios de vencimiento de hoy.\n\n` +
+          `Revisa el historial completo en tu panel web.`
 
-  console.log(`   → ${vencidos.rows.length} miembro(s) vencidos hace 1 día`)
-  resumen.vencidos.encontrados = vencidos.rows.length
-
-  for (const member of vencidos.rows) {
-    const ok = await enviarYLoggear(
-      gym.id, member, 'VENCIDO',
-      msgVencido(member.nombre, gym.nombre)
-    )
-    if (ok) resumen.vencidos.enviados++
-    else resumen.vencidos.fallidos++
+        await sendViaBaileys(gym.id, ownerPhone, summaryMsg).catch(e => console.warn(`⚠️ Resumen al dueño falló: ${e.message}`))
+      }
+    } catch (sErr) {
+      console.warn(`⚠️ No se pudo enviar mensaje de resumen al dueño: ${sErr.message}`)
+    }
   }
 
   return resumen
@@ -149,9 +145,14 @@ async function procesarGimnasio(gym) {
  * Envía un mensaje WhatsApp y registra el resultado en recordatorios_log.
  * Retorna true si se envió correctamente, false si falló.
  */
-async function enviarYLoggear(gymId, member, tipo, mensaje) {
+async function enviarYLoggear(gymId, member, tipo, mensaje, gymNombre = 'Tu Gimnasio') {
   try {
-    await sendWhatsAppMessage(gymId, member.telefono, mensaje)
+    const diasText = tipo === 'POR_VENCER_2_DIAS' ? 'vence en 2 días' : tipo === 'VENCE_HOY' ? 'vence hoy' : 'ya venció'
+    await sendWhatsAppMessage(gymId, member.telefono, mensaje, {
+      nombre: member.nombre,
+      gymNombre: gymNombre,
+      dias: diasText
+    })
 
     await query(
       `INSERT INTO recordatorios_log (gym_id, member_id, tipo, estado, mensaje)
@@ -187,9 +188,9 @@ export { procesarGimnasio }
 
 export async function iniciarRecordatorios() {
   await asegurarTablaLogs()
-  console.log('⏰ Programando recordatorios automáticos para las 10:00 AM...')
+  console.log('⏰ Programando recordatorios automáticos para las 11:30 AM...')
 
-  const task = cron.schedule('0 10 * * *', async () => {
+  const task = cron.schedule('30 11 * * *', async () => {
     console.log('⏰═══════════════════════════════════════════')
     console.log('⏰ Ejecutando recordatorios automáticos...')
     console.log(`⏰ Fecha: ${new Date().toLocaleDateString('es-EC', { timeZone: 'America/Guayaquil' })}`)
@@ -211,7 +212,7 @@ export async function iniciarRecordatorios() {
     }
   })
 
-  console.log('✅ Recordatorios programados (10:00 AM todos los días)')
+  console.log('✅ Recordatorios programados (11:30 AM todos los días)')
   return task
 }
 

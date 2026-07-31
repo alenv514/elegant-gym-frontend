@@ -242,6 +242,30 @@ npm run dev   # http://localhost:5173
 
 ---
 
+## 📌 Pendientes y Estado Actual (Meta WhatsApp API)
+
+### 🔴 Problemas Detectados y Diagnóstico
+1. **Plantilla en revisión en Meta WhatsApp Manager (`recordatorio_servicio`):**
+   - **Estado:** Se creó la plantilla en español `recordatorio_servicio` bajo la categoría *Servicio / Utility*.
+   - **Acción si demora +24h:** Eliminar la plantilla pendiente en [Meta WhatsApp Manager](https://business.facebook.com/wa/manage/message-templates) y volver a crearla como **`Servicio`** con el texto transaccional estándar para forzar la aprobación automática por IA en 1-2 minutos.
+   - **Código de idioma:** Meta registra el idioma como `es_LA` o `es_ES` (en lugar de `es`).
+
+2. **Rechazo de `hello_world` en números reales de producción:**
+   - **Error Meta:** `(#131058) Hello World templates can only be sent from Public Test Numbers`.
+   - **Causa:** El chip `+593 98 718 0742` es un número oficial registrado en producción en Ecuador. Meta prohíbe enviar `hello_world` en números de producción.
+   - **Solución:** Usar como plantilla activa de producción la plantilla aprobada en verde en la cuenta: **`3p_direct_integration_test_1`** (con idioma `en_US`).
+
+3. **Avisos de descifrado en consola (`Bad MAC`):**
+   - **Diagnóstico:** Son avisos inofensivos de sincronización de la biblioteca secundaria Baileys al reconectar mensajes antiguos. No afectan el envío por la API de Meta.
+
+### 📋 Tareas Pendientes a Realizar
+- [ ] **Validar Aprobación de Plantilla `recordatorio_servicio`:** Verificar si pasó al estado *Activa* en verde.
+- [ ] **Actualizar Idioma en Código (`metaWhatsapp.js`):** Ajustar el código de idioma a `es_LA` o `es_ES` para coincidir con la plantilla registrada en Meta.
+- [ ] **Configurar Respaldo de Producción:** Asegurar que la plantilla de respaldo en `metaWhatsapp.js` sea `3p_direct_integration_test_1` (`en_US`).
+- [ ] **Mantener Envío Único Optimizado:** Conservar activo solo el recordatorio del día exacto (**`VENCE_HOY`**) para ahorrar un 66% de consumo en la API de Meta.
+
+---
+
 ## ⏭️ Próximos Pasos / Roadmap
  
 ### 🔜 Prioridad alta

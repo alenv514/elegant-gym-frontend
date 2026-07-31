@@ -288,6 +288,52 @@ router.post('/recordatorios', async (req, res) => {
 })
 
 /**
+ * GET /api/members/recordatorios/historial
+ * Fetches the audit log of all sent WhatsApp reminders for the gym.
+ */
+router.get('/recordatorios/historial', async (req, res) => {
+  try {
+    const gymId = req.user.gym_id
+    const logs = await query(`
+      SELECT 
+        l.id,
+        l.tipo,
+        l.estado,
+        l.mensaje,
+        l.error_msg,
+        l.fecha_envio,
+        m.nombre AS miembro_nombre,
+        m.telefono AS miembro_telefono
+      FROM recordatorios_log l
+      JOIN members m ON m.id = l.member_id
+      WHERE l.gym_id = $1
+      ORDER BY l.fecha_envio DESC
+      LIMIT 100
+    `, [gymId])
+
+    return res.json({ historial: logs.rows })
+  } catch (err) {
+    console.error('Error al consultar historial de recordatorios:', err)
+    return res.status(500).json({ error: 'Error al consultar historial' })
+  }
+})
+
+/**
+ * DELETE /api/members/recordatorios/historial
+ * Deletes all reminder history log entries for the gym.
+ */
+router.delete('/recordatorios/historial', async (req, res) => {
+  try {
+    const gymId = req.user.gym_id
+    await query(`DELETE FROM recordatorios_log WHERE gym_id = $1`, [gymId])
+    return res.json({ success: true, message: 'Historial vaciado correctamente' })
+  } catch (err) {
+    console.error('Error al vaciar historial de recordatorios:', err)
+    return res.status(500).json({ error: 'Error al vaciar el historial' })
+  }
+})
+
+/**
  * DELETE /api/members/:id
  * Removes a member.
  */

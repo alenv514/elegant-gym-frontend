@@ -10,6 +10,7 @@ import pino from 'pino'
 import { query } from '../config/db.js'
 import fs from 'fs'
 import path from 'path'
+import { sendMetaWhatsAppMessage } from './metaWhatsapp.js'
 
 const activeConnections = new Map()
 const logger = pino({ level: 'silent' })
@@ -30,8 +31,12 @@ async function saveSessionDataToDb(gym_id) {
     for (const file of files) {
       if (file.endsWith('.json')) {
         const filePath = path.join(sessionDir, file)
-        const content = fs.readFileSync(filePath, 'utf8')
-        sessionData[file] = JSON.parse(content)
+        try {
+          const content = fs.readFileSync(filePath, 'utf8')
+          if (content && content.trim()) {
+            sessionData[file] = JSON.parse(content)
+          }
+        } catch {}
       }
     }
 
@@ -134,6 +139,8 @@ function cleanStaleMemoryConnection(gym_id) {
  * @param {boolean} isRetry - true if this is a restartRequired recovery socket
  * @returns {Promise<object>} the socket
  */
+const msgStore = new Map()
+
 async function createAndMonitorSocket(gym_id, onQrCallback, isRetry = false) {
   const { state, saveCreds } = await getGymAuthState(gym_id)
 
@@ -153,16 +160,20 @@ async function createAndMonitorSocket(gym_id, onQrCallback, isRetry = false) {
       auth: state,
       logger,
       printQRInTerminal: false,
-      browser: Browsers.macOS('Desktop'),
+      browser: Browsers.ubuntu('Chrome'),
       syncFullHistory: false,
-      markOnlineOnConnect: false,
-      fireInitQueries: false,
-      shouldIgnoreJid: () => true,
+      markOnlineOnConnect: true,
       connectTimeoutMs: 60_000,
       keepAliveIntervalMs: 25_000,
       emitOwnEvents: true,
       downloadHistory: false,
       linkPreviewImage: false,
+      getMessage: async (key) => {
+        if (key && key.id && msgStore.has(key.id)) {
+          return msgStore.get(key.id)
+        }
+        return { conversation: 'Recordatorio de gimnasio' }
+      }
     })
   } catch (err) {
     console.error('❌ Error creating WhatsApp socket:', err)
@@ -302,6 +313,80 @@ export async function initWhatsAppSession(gym_id, onQrCallback) {
 }
 
 /**
+ * One-step: initialize session and request pairing code.
+ * Waits for the WebSocket to connect to WhatsApp servers before requesting the code.
+ *
+ * @param {number} gym_id
+ * @param {string} phoneNumber - Full phone number with country code (digits only)
+ * @param {number} timeoutMs - How long to wait for WebSocket connection
+ * @returns {Promise<string>} The 8-digit pairing code
+ */
+export async function initWithPairingCode(gym_id, phoneNumber, timeoutMs = 15000) {
+  const cleanPhone = phoneNumber.replace(/\D/g, '')
+  if (cleanPhone.length < 10) {
+    throw new Error('Número de teléfono inválido. Debe tener al menos 10 dígitos.')
+  }
+
+  cleanStaleMemoryConnection(gym_id)
+  wipeSessionDisk(gym_id)
+
+  try {
+    await query(
+      `UPDATE whatsapp_sessions 
+       SET estado_conexion = 'DESCONECTADO', session_data = NULL, numero_telefono = NULL, updated_at = NOW() 
+       WHERE gym_id = $1`,
+      [gym_id]
+    )
+  } catch (dbErr) {
+    console.warn(`⚠️ Could not reset DB state for gym_id ${gym_id}: ${dbErr.message}`)
+  }
+
+  console.log(`🔌 Initializing WhatsApp session for pairing code, gym_id: ${gym_id}...`)
+  await createAndMonitorSocket(gym_id, null, false)
+
+  const conn = activeConnections.get(gym_id)
+  if (!conn || !conn.socket) {
+    throw new Error('Error al crear la sesión de WhatsApp')
+  }
+
+  console.log(`⏳ Waiting for WebSocket connection to WhatsApp servers...`)
+
+  const wsReady = await new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      console.warn(`⚠️ Timeout waiting for WebSocket connection for gym_id: ${gym_id}`)
+      resolve(false)
+    }, timeoutMs)
+
+    const handler = (update) => {
+      const { qr, connection } = update
+      if (qr || connection === 'open') {
+        clearTimeout(timeout)
+        conn.socket.ev.off('connection.update', handler)
+        console.log(`✅ WebSocket connected (connection: ${connection || 'qr-generated'})`)
+        resolve(true)
+      }
+    }
+
+    conn.socket.ev.on('connection.update', handler)
+  })
+
+  if (!wsReady) {
+    throw new Error('No se pudo conectar con los servidores de WhatsApp. Revisa tu conexión a internet e intenta de nuevo.')
+  }
+
+  await new Promise(r => setTimeout(r, 1000))
+
+  try {
+    const code = await conn.socket.requestPairingCode(cleanPhone)
+    console.log(`🔑 Pairing code generated for gym_id: ${gym_id} (phone: ${cleanPhone}): ${code}`)
+    return code
+  } catch (err) {
+    console.error(`❌ Pairing code error for gym_id ${gym_id}:`, err.message, err.stack)
+    throw new Error(`Error al solicitar código de vinculación: ${err.message}`)
+  }
+}
+
+/**
  * Gets the active socket for a gym.
  */
 export async function getWhatsAppSocket(gym_id) {
@@ -316,7 +401,7 @@ export async function getWhatsAppSocket(gym_id) {
  * Sends a message from a gym's account to a client number.
  * Resolves once the message has been queued by Baileys.
  */
-export async function sendWhatsAppMessage(gym_id, to, text) {
+export async function sendWhatsAppMessage(gym_id, to, text, params = null) {
   let cleanTo = (to || '').replace(/\D/g, '')
   if (!cleanTo) throw new Error('Número de teléfono inválido')
 
@@ -325,7 +410,15 @@ export async function sendWhatsAppMessage(gym_id, to, text) {
     cleanTo = '593' + cleanTo.substring(1)
   }
 
-  const jid = `${cleanTo}@s.whatsapp.net`
+  // 🟢 1. Primary Channel: Official Meta WhatsApp Cloud API (entrega a TODOS)
+  try {
+    await sendMetaWhatsAppMessage(cleanTo, text, params)
+    return
+  } catch (metaErr) {
+    console.warn(`⚠️ Meta Cloud API failed (${metaErr.message}), trying Baileys fallback...`)
+  }
+
+  // 🟡 2. Fallback Channel: Baileys Web Socket (texto libre, sin plantillas)
   let socket = await getWhatsAppSocket(gym_id)
 
   // 🔄 Automatic Reconnect if socket is not active in memory but DB/Disk credentials exist
@@ -346,26 +439,87 @@ export async function sendWhatsAppMessage(gym_id, to, text) {
     }
   }
 
-  if (!socket) {
-    throw new Error('El canal de WhatsApp no está conectado para este gimnasio')
+  if (socket) {
+    // 🔍 Verify target number on WhatsApp servers and get canonical JID
+    let jid = `${cleanTo}@s.whatsapp.net`
+    try {
+      const [onWa] = await socket.onWhatsApp(cleanTo)
+      if (onWa && onWa.exists && onWa.jid) {
+        jid = onWa.jid
+        console.log(`🔍 Verified WhatsApp JID for ${cleanTo}: ${jid}`)
+      } else {
+        console.warn(`⚠️ Número ${cleanTo} no parece estar registrado en WhatsApp`)
+      }
+    } catch (waErr) {
+      console.warn(`⚠️ Warning onWhatsApp check for ${cleanTo}: ${waErr.message}`)
+    }
+
+    // Send message with 8-second safety timeout so invalid/hanging numbers don't block batch execution
+    const sentMsg = await Promise.race([
+      socket.sendMessage(jid, { text }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('WhatsApp server timeout (8s limit)')), 8000)
+      )
+    ])
+
+    const msgId = sentMsg?.key?.id
+
+    if (msgId) {
+      if (sentMsg?.message) {
+        msgStore.set(msgId, sentMsg.message)
+      }
+      console.log(`✉️  Message sent to ${jid} (ID: ${msgId}) via Baileys (fallback)`)
+      return
+    }
   }
 
-  // Send message with 8-second safety timeout so invalid/hanging numbers don't block batch execution
+  throw new Error(`No se pudo enviar el mensaje por ningún canal (Meta API + Baileys)`)
+}
+
+/**
+ * Sends a free-text message directly via Baileys, bypassing Meta API.
+ * Use this for owner notifications that don't need a template.
+ */
+export async function sendViaBaileys(gym_id, to, text) {
+  let cleanTo = (to || '').replace(/\D/g, '')
+  if (!cleanTo) throw new Error('Número de teléfono inválido')
+  if (cleanTo.startsWith('0')) cleanTo = '593' + cleanTo.substring(1)
+
+  let socket = await getWhatsAppSocket(gym_id)
+  if (!socket) {
+    const restored = await restoreSessionDataFromDb(gym_id)
+    const sessionDir = path.join(process.cwd(), 'sessions', `gym_${gym_id}`)
+    if (fs.existsSync(path.join(sessionDir, 'creds.json')) || restored) {
+      await createAndMonitorSocket(gym_id, null, false).catch(() => {})
+      for (let i = 0; i < 12; i++) {
+        await new Promise(r => setTimeout(r, 500))
+        socket = await getWhatsAppSocket(gym_id)
+        if (socket) break
+      }
+    }
+  }
+
+  if (!socket) throw new Error('WhatsApp Baileys no está conectado')
+
+  let jid = `${cleanTo}@s.whatsapp.net`
+  try {
+    const [onWa] = await socket.onWhatsApp(cleanTo)
+    if (onWa?.exists && onWa.jid) jid = onWa.jid
+  } catch {}
+
   const sentMsg = await Promise.race([
     socket.sendMessage(jid, { text }),
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('WhatsApp server timeout (8s limit)')), 8000)
-    )
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
   ])
 
   const msgId = sentMsg?.key?.id
-
-  if (!msgId) {
-    console.error(`❌ No message ID returned for gym_id ${gym_id} to ${jid}`)
-    throw new Error('No se pudo obtener ID del mensaje')
+  if (msgId) {
+    if (sentMsg?.message) msgStore.set(msgId, sentMsg.message)
+    console.log(`✉️  [BAILEYS] Resumen enviado a ${jid} (ID: ${msgId})`)
+    return
   }
 
-  console.log(`✉️  Message sent to ${jid} (ID: ${msgId})`)
+  throw new Error('No se pudo enviar el resumen vía Baileys')
 }
 
 /**
