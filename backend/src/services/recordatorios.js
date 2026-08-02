@@ -75,9 +75,7 @@ async function getGymsConectados() {
   const result = await query(`
     SELECT g.id, g.nombre
     FROM gyms g
-    JOIN whatsapp_sessions ws ON ws.gym_id = g.id
-    WHERE ws.estado_conexion = 'CONECTADO'
-      AND g.suscripcion_activa = true
+    WHERE g.suscripcion_activa = true
   `)
   return result.rows
 }
