@@ -210,6 +210,8 @@ export async function iniciarRecordatorios() {
     } catch (err) {
       console.error('❌ Error en ciclo de recordatorios:', err.message)
     }
+  }, {
+    timezone: 'America/Guayaquil'
   })
 
   console.log('✅ Recordatorios programados (8:00 AM todos los días)')

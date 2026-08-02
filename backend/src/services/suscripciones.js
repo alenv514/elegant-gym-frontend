@@ -39,10 +39,15 @@ export async function iniciarVerificacionSuscripciones() {
       console.log(`   ❌ ${gym.nombre} → Suspendido por falta de pago`)
     }
 
-    console.log(`   ${result.rows.length === 0 ? '✅ Ningún gym requiere suspensión' : `✅ ${result.rows.length} gym(s) suspendidos`}`)
+    if (result.rows.length === 0) {
+      console.log('   ✅ Ningún gym requiere suspensión')
+    } else {
+      console.log(`   ✅ ${result.rows.length} gym(s) suspendidos`)
+    }
     console.log('⏰═══════════════════════════════════════════')
+  }, {
+    timezone: 'America/Guayaquil'
   })
 
   console.log('✅ Verificación de suscripciones programada (09:00 AM todos los días)')
 }
-

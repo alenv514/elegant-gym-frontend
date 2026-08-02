@@ -22,13 +22,15 @@ export async function sendMetaWhatsAppMessage(to, text, params = null) {
 
   const url = `https://graph.facebook.com/v21.0/${META_PHONE_NUMBER_ID}/messages`
 
-  // Template 'recordatorio_membresia' (Servicio) — 2 variables: {{1}} nombre, {{2}} gimnasio
+  // Template 'recordatorio_membresia' — 3 variables: {{1}} nombre, {{2}} gimnasio, {{3}} estado/dias
   const templateParams = params ? [
     { type: 'text', text: params.nombre || 'Estimado socio' },
-    { type: 'text', text: params.gymNombre || 'Tu Gimnasio' }
+    { type: 'text', text: params.gymNombre || 'Tu Gimnasio' },
+    { type: 'text', text: params.dias || 'vence hoy' }
   ] : [
     { type: 'text', text: 'Estimado socio' },
-    { type: 'text', text: 'Tu Gimnasio' }
+    { type: 'text', text: 'Tu Gimnasio' },
+    { type: 'text', text: 'vence hoy' }
   ]
   const payload = {
     messaging_product: 'whatsapp',
