@@ -59,6 +59,7 @@ const gymNavItems = [
 export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [showTerms, setShowTerms] = useState(false)
 
   const initials = user?.nombre
     ? user.nombre.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
@@ -140,8 +141,68 @@ export default function Sidebar({ open, onClose }) {
             {icons.logout}
             Cerrar sesión
           </button>
+          <button
+            type="button"
+            onClick={() => setShowTerms(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-faint, rgba(255, 255, 255, 0.2))',
+              fontSize: '0.62rem',
+              marginTop: '0.4rem',
+              cursor: 'pointer',
+              opacity: 0.4,
+              width: '100%',
+              textAlign: 'center',
+              textDecoration: 'underline'
+            }}
+          >
+            Términos SaaS
+          </button>
         </div>
       </aside>
+
+      {/* Modal discreto de Términos y Condiciones SaaS */}
+      {showTerms && (
+        <div
+          className="modal-overlay"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}
+          onClick={() => setShowTerms(false)}
+        >
+          <div
+            className="modal"
+            style={{ maxWidth: '520px', maxHeight: '85vh', overflowY: 'auto' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <span className="modal-title" style={{ fontSize: '1rem' }}>📋 Términos y Condiciones de Servicio (SaaS)</span>
+              <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setShowTerms(false)}>×</button>
+            </div>
+
+            <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <p>
+                <strong>1. Titularidad y Propiedad Intelectual:</strong> La plataforma de gestión y software <em>"Elegant for Gym"</em> es un servicio propiedad intelectual exclusiva del desarrollador <strong>Alen (Proveedor y Dueño del SaaS)</strong>. Todos los derechos sobre el código fuente, diseño, bases de datos e infraestructura pertenecen en su totalidad al Proveedor.
+              </p>
+              <p>
+                <strong>2. Modalidad de Alquiler (SaaS):</strong> El acceso a la plataforma se concede a los gimnasios bajo la modalidad de <strong>licencia de alquiler mensual (Software as a Service)</strong>. La contratación no transfiere propiedad del software, únicamente el derecho de uso durante la vigencia del alquiler pagado.
+              </p>
+              <p>
+                <strong>3. Suspensión del Servicio:</strong> El servicio requiere el pago puntual de la tarifa mensual de alquiler. En caso de mora en el pago transcurrido el período de gracia otorgado (2 días), el acceso a la plataforma será suspendido automáticamente por el sistema hasta la regularización de la suscripción.
+              </p>
+              <p>
+                <strong>4. Uso y Responsabilidad:</strong> El cliente es responsable de la confidencialidad de sus credenciales y de los datos ingresados en su cuenta.
+              </p>
+              <p>
+                <strong>5. Aceptación Implícita:</strong> El inicio de sesión y el uso continuado de la plataforma constituyen la aceptación explícita de estos términos.
+              </p>
+            </div>
+
+            <div className="modal-footer" style={{ marginTop: '1rem' }}>
+              <button className="btn btn-primary btn-sm" onClick={() => setShowTerms(false)}>Entendido</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

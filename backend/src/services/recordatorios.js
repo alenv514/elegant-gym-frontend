@@ -106,13 +106,19 @@ async function procesarGimnasio(gym) {
   console.log(`   → ${venceHoy.rows.length} miembro(s) vencen hoy`)
   resumen.vence_hoy.encontrados = venceHoy.rows.length
 
+  const enviadosNombres = []
+
   for (const member of venceHoy.rows) {
     const ok = await enviarYLoggear(
       gym.id, member, 'VENCE_HOY',
       msgVenceHoy(member.nombre, gym.nombre), gym.nombre
     )
-    if (ok) resumen.vence_hoy.enviados++
-    else resumen.vence_hoy.fallidos++
+    if (ok) {
+      resumen.vence_hoy.enviados++
+      enviadosNombres.push(member.nombre)
+    } else {
+      resumen.vence_hoy.fallidos++
+    }
     await new Promise(r => setTimeout(r, 200))
   }
 
@@ -125,8 +131,10 @@ async function procesarGimnasio(gym) {
       )
       const ownerPhone = ownerRes.rows[0]?.numero_telefono
       if (ownerPhone) {
+        const nombresLista = enviadosNombres.map(n => `• ${n}`).join('\n')
         const summaryMsg = `📊 *Resumen de Recordatorios — ${gym.nombre}*\n\n` +
-          `Se enviaron ${resumen.vence_hoy.enviados} recordatorios de vencimiento de hoy.\n\n` +
+          `Se enviaron ${resumen.vence_hoy.enviados} recordatorio(s) hoy a:\n` +
+          `${nombresLista}\n\n` +
           `Revisa el historial completo en tu panel web.`
 
         await sendViaBaileys(gym.id, ownerPhone, summaryMsg).catch(e => console.warn(`⚠️ Resumen al dueño falló: ${e.message}`))
