@@ -181,19 +181,19 @@ export default function Sidebar({ open, onClose }) {
 
             <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <p>
-                <strong>1. Titularidad y Propiedad Intelectual:</strong> La plataforma de gestión y software <em>"Elegant for Gym"</em> es un servicio propiedad intelectual exclusiva del desarrollador <strong>Alen (Proveedor y Dueño del SaaS)</strong>. Todos los derechos sobre el código fuente, diseño, bases de datos e infraestructura pertenecen en su totalidad al Proveedor.
+                <strong>1. Titularidad del Software e Infraestructura:</strong> La presente plataforma informática, incluyendo su código fuente, arquitectura de software, diseño de interfaz, motores de automatización, base de datos y desarrollo técnico, es propiedad intelectual y desarrollo tecnológico exclusivo de <strong>Alen (Proveedor SaaS)</strong>. La denominación <em>"Elegant for Gym"</em> corresponde al nombre comercial asignado a la aplicación a solicitud del cliente, lo cual no concede ni transfiere derechos de propiedad sobre la tecnología, plataforma o código del software.
               </p>
               <p>
-                <strong>2. Modalidad de Alquiler (SaaS):</strong> El acceso a la plataforma se concede a los gimnasios bajo la modalidad de <strong>licencia de alquiler mensual (Software as a Service)</strong>. La contratación no transfiere propiedad del software, únicamente el derecho de uso durante la vigencia del alquiler pagado.
+                <strong>2. Modalidad de Licencia de Alquiler (SaaS):</strong> El derecho de uso de la aplicación se concede a los establecimientos clientes única y exclusivamente bajo la modalidad de <strong>Licencia de Alquiler de Software como Servicio (SaaS)</strong>, de carácter temporal, renovable y no exclusivo. La contratación del servicio no constituye bajo ningún concepto venta, cesión o transferencia de los derechos de autor de la herramienta tecnológica.
               </p>
               <p>
-                <strong>3. Suspensión del Servicio:</strong> El servicio requiere el pago puntual de la tarifa mensual de alquiler. En caso de mora en el pago transcurrido el período de gracia otorgado (2 días), el acceso a la plataforma será suspendido automáticamente por el sistema hasta la regularización de la suscripción.
+                <strong>3. Continuidad del Servicio y Suspensión por Mora:</strong> La validez del acceso y funcionamiento de la aplicación está supeditada al pago puntual de la tarifa mensual de alquiler de software. En caso de mora en el pago transcurrido el período de gracia otorgado por el sistema (2 días), el Proveedor (<strong>Alen</strong>) queda expresamente facultado para suspender el servicio y el acceso a la plataforma hasta la cancelación de los valores adeudados.
               </p>
               <p>
-                <strong>4. Uso y Responsabilidad:</strong> El cliente es responsable de la confidencialidad de sus credenciales y de los datos ingresados en su cuenta.
+                <strong>4. Confidencialidad y Gestión de Información:</strong> El gimnasio cliente es el único responsable de la custodia de sus credenciales de acceso y del tratamiento de la información de sus usuarios y registros internos.
               </p>
               <p>
-                <strong>5. Aceptación Implícita:</strong> El inicio de sesión y el uso continuado de la plataforma constituyen la aceptación explícita de estos términos.
+                <strong>5. Aceptación Implícita:</strong> El inicio de sesión, autenticación de usuario o uso continuado de la plataforma implica la aceptación tácita, plena e incondicional de los presentes Términos y Condiciones de Servicio.
               </p>
             </div>
 
